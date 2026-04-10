@@ -1,0 +1,45 @@
+﻿using Microsoft.Extensions.Caching.Memory;
+using Newtonsoft.Json;
+
+public class WeatherService : IWeatherService
+{
+    private readonly HttpClient _httpClient;
+    private readonly IConfiguration _config;
+    private readonly IMemoryCache _cache;
+
+    public WeatherService(HttpClient httpClient, IConfiguration config, IMemoryCache cache)
+    {
+        _httpClient = httpClient;
+        _config = config;
+        _cache = cache;
+    }
+
+    public async Task<string> GetWeatherAsync(string city)
+    {
+        string cacheKey = $"weather_{city}";
+
+        if (_cache.TryGetValue(cacheKey, out string? cachedData))
+        {
+            return cachedData!;
+        }
+
+        var apiKey = Environment.GetEnvironmentVariable("WEATHER_API_KEY");
+        var baseUrl = _config["WeatherApi:BaseUrl"];
+
+        var url = $"{baseUrl}?q={city}&appid={apiKey}&units=metric";
+
+        var response = await _httpClient.GetAsync(url);
+
+        if (!response.IsSuccessStatusCode)
+        {
+            throw new Exception("Error fetching weather data");
+        }
+
+        var content = await response.Content.ReadAsStringAsync();
+
+        // Cache for 5 minutes
+        _cache.Set(cacheKey, content, TimeSpan.FromMinutes(5));
+
+        return content;
+    }
+}
