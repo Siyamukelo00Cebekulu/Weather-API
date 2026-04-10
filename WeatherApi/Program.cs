@@ -1,14 +1,26 @@
 var builder = WebApplication.CreateBuilder(args);
 
+
 // Add services
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
+
 builder.Services.AddMemoryCache();
 builder.Services.AddHttpClient<IWeatherService, WeatherService>();
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowAll",
+        policy => policy.AllowAnyOrigin()
+                        .AllowAnyMethod()
+                        .AllowAnyHeader());
+});
 
 var app = builder.Build();
+
+app.UseCors("AllowAll");
+
 
 app.UseSwagger();
 app.UseSwaggerUI();

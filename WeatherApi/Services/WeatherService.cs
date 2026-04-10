@@ -25,7 +25,9 @@ public class WeatherService : IWeatherService
 
         var apiKey = Environment.GetEnvironmentVariable("WEATHER_API_KEY");
         var baseUrl = _config["WeatherApi:BaseUrl"];
-
+        
+        Console.WriteLine(apiKey); // Debugging line to check if API key is loaded
+        Console.WriteLine(baseUrl); // Debugging line to check if Base URL is loaded
         var url = $"{baseUrl}?q={city}&appid={apiKey}&units=metric";
 
         var response = await _httpClient.GetAsync(url);
